@@ -56,7 +56,7 @@
 <main>
   <h1>WebRecord</h1>
 
-  <button id="pick"><span class="dot"></span>録音した動画を選ぶ</button>
+  <button id="pick"><span class="dot"></span>画面収録した動画を選ぶ</button>
   <input id="file" type="file" accept="video/*,audio/*" hidden>
 
   <progress id="bar" max="1" value="0" hidden></progress>
@@ -65,11 +65,12 @@
 
   <button id="save" disabled>MP3を保存</button>
 
-  <details>
+  <details open>
     <summary>使い方</summary>
     <ol>
-      <li>コントロールセンターの「画面収録」で、ブラウザの音を再生しながら収録</li>
-      <li>「録音した動画を選ぶ」で収録した動画を選択（前後の無音は自動でカット）</li>
+      <li>アクションボタン（またはロック画面のボタン）で画面収録を開始</li>
+      <li>Safariで音を再生し、終わったら画面上部の赤い表示 →「停止」</li>
+      <li>「画面収録した動画を選ぶ」で動画を選択（前後の無音は自動でカット）</li>
       <li>「MP3を保存」→「"ファイル"に保存」</li>
     </ol>
   </details>
