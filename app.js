@@ -63,7 +63,9 @@ async function convert(file) {
     mp3File = new File([blob], `rec-${timestamp()}.mp3`, { type: 'audio/mpeg' });
     preview.src = URL.createObjectURL(blob);
     preview.hidden = false;
-    setStatus(`完了：${formatTime((end - start) / audio.sampleRate)}・${(blob.size / 1048576).toFixed(1)} MB`);
+    const sr = audio.sampleRate;
+    setStatus(`完了：${formatTime((end - start) / sr)}・${(blob.size / 1048576).toFixed(1)} MB` +
+      `（元 ${formatTime(channels[0].length / sr)}、前 ${formatTime(start / sr)}・後 ${formatTime((channels[0].length - end) / sr)} カット）`);
     saveBtn.disabled = false;
   } catch (e) {
     console.error(e);
