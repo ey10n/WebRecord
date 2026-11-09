@@ -3,6 +3,7 @@
 const KBPS = 192;
 const SILENCE_THRESHOLD = 0.003; // 前後の無音カット判定
 const PAD_SEC = 0.1;
+const HEAD_SKIP_SEC = 1; // 画面収録開始時の「ピコン」音を除去
 
 const $ = (id) => document.getElementById(id);
 const pickBtn = $('pick');
@@ -91,12 +92,13 @@ async function decode(buf) {
 function findSound(channels, sampleRate) {
   const n = channels[0].length;
   const loud = (i) => channels.some((c) => Math.abs(c[i]) > SILENCE_THRESHOLD);
-  let start = 0;
+  const skip = Math.min(n, Math.round(HEAD_SKIP_SEC * sampleRate));
+  let start = skip;
   while (start < n && !loud(start)) start++;
   let end = n;
   while (end > start && !loud(end - 1)) end--;
   const pad = Math.round(PAD_SEC * sampleRate);
-  return [Math.max(0, start - pad), Math.min(n, end + pad)];
+  return [Math.max(skip, start - pad), Math.min(n, end + pad)];
 }
 
 function encode(channels, sampleRate) {
