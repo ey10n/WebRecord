@@ -86,6 +86,27 @@
   .group button.danger { color: var(--err); }
   .group button .ic { width: 1.4em; display: inline-block; text-align: center; }
   #reconvert { background: var(--accent); color: var(--accent-text); padding: 16px; font-size: 17px; }
+
+  /* 名前を付けて保存 */
+  dialog {
+    width: min(360px, calc(100vw - 32px)); padding: 18px 16px 16px; border: 0; border-radius: 16px;
+    background: var(--card); color: var(--text); box-shadow: 0 10px 40px rgba(0,0,0,.3);
+  }
+  dialog::backdrop { background: rgba(0,0,0,.4); }
+  .dlg-title { margin: 0 0 12px; font-size: 17px; font-weight: 600; text-align: center; }
+  .namebox {
+    display: flex; align-items: center; gap: 4px; border: 1px solid var(--line); border-radius: 10px;
+    padding: 0 12px; background: var(--bg);
+  }
+  .namebox input {
+    flex: 1; min-width: 0; border: 0; outline: 0; background: none; color: var(--text);
+    font: inherit; font-size: 17px; padding: 12px 0; -webkit-user-select: text; user-select: text;
+  }
+  .namebox span { color: var(--sub); }
+  .dlg-btns { display: flex; gap: 10px; margin-top: 16px; }
+  .dlg-btns button { padding: 14px 8px; font-size: 17px; border-radius: 12px; }
+  #nameCancel { background: var(--bg); color: var(--text); }
+  #nameOk { background: var(--accent); color: var(--accent-text); }
 </style>
 </head>
 <body>
@@ -145,6 +166,17 @@
 
   <button id="save" disabled>MP3を保存</button>
 
+  <dialog id="nameDlg">
+    <form id="nameForm">
+      <p class="dlg-title">名前を付けて保存</p>
+      <div class="namebox"><input id="nameInput" type="text" autocomplete="off" autocapitalize="off" spellcheck="false" enterkeyhint="done"><span>.mp3</span></div>
+      <div class="dlg-btns">
+        <button type="button" id="nameCancel">キャンセル</button>
+        <button type="submit" id="nameOk">保存</button>
+      </div>
+    </form>
+  </dialog>
+
   <details open>
     <summary>使い方</summary>
     <ol>
@@ -152,7 +184,7 @@
       <li>Safariで音を再生し、終わったら画面上部の赤い表示 →「停止」</li>
       <li>「画面収録した動画を選ぶ」で動画を選択（前後の無音は自動でカット）</li>
       <li>必要なら「頭と末尾をカット」で範囲を調整し、「この範囲でMP3に変換」</li>
-      <li>「MP3を保存」→「"ファイル"に保存」</li>
+      <li>「MP3を保存」→ ファイル名を入力して「保存」→「"ファイル"に保存」</li>
     </ol>
   </details>
 </main>

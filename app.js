@@ -33,8 +33,37 @@ fileInput.onchange = () => {
   if (file) load(file);
 };
 
-saveBtn.onclick = async () => {
+// 「MP3を保存」→ 名前を付けて保存（拡張子 .mp3 は自動で付ける）
+const nameDlg = $('nameDlg');
+const nameInput = $('nameInput');
+
+saveBtn.onclick = () => {
   if (!mp3File) return;
+  nameInput.value = mp3File.name.replace(/\.mp3$/i, '');
+  if (!nameDlg.showModal) { // <dialog> 非対応の古いブラウザ
+    const name = prompt('ファイル名', nameInput.value);
+    if (name != null) saveAs(name);
+    return;
+  }
+  nameDlg.showModal();
+  nameInput.focus();
+  nameInput.setSelectionRange(0, nameInput.value.length);
+};
+
+$('nameCancel').onclick = () => nameDlg.close();
+
+// 共有シートはタップ直後でないと開けないので、保存ボタンの submit の中で直接呼ぶ
+$('nameForm').onsubmit = (e) => {
+  e.preventDefault();
+  nameDlg.close();
+  saveAs(nameInput.value);
+};
+
+async function saveAs(rawName) {
+  const name = rawName.trim().replace(/\.mp3$/i, '').replace(/[\\/:*?"<>|\u0000-\u001f]/g, '_').trim()
+    || mp3File.name.replace(/\.mp3$/i, '');
+  // 次に保存するときも同じ名前を出す
+  mp3File = new File([mp3File], `${name}.mp3`, { type: 'audio/mpeg' });
   if (navigator.canShare && navigator.canShare({ files: [mp3File] })) {
     try {
       await navigator.share({ files: [mp3File] });
@@ -48,7 +77,7 @@ saveBtn.onclick = async () => {
   a.download = mp3File.name;
   a.click();
   setTimeout(() => URL.revokeObjectURL(a.href), 60000);
-};
+}
 
 reconvertBtn.onclick = () => convert();
 
