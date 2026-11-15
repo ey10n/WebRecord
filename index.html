@@ -51,17 +51,96 @@
   details { color: var(--sub); font-size: 14px; background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 10px 14px; }
   summary { cursor: pointer; }
   ol { padding-left: 1.3em; margin: 8px 0 0; }
+
+  /* 頭と末尾のカット（AnalogicPlayer の「頭と末尾をカット」画面と同じ構成） */
+  :root { --amber: #ffb547; --needle: #e0533a; --track: #e2e2e6; --btn: #ececf0; }
+  @media (prefers-color-scheme: dark) { :root { --track: #3a3a3c; --btn: #2c2c2e; } }
+  #trim { border: 0; margin: 0; padding: 0; min-width: 0; display: flex; flex-direction: column; gap: 8px; }
+  #trim:disabled { opacity: .5; }
+  .trim-title { font-size: 17px; font-weight: 600; text-align: center; margin: 0; }
+  .group { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 4px 14px; }
+  .group > * { padding: 10px 0; }
+  .group > * + * { border-top: 1px solid var(--line); }
+  .gh { font-size: 13px; color: var(--sub); margin: 8px 14px 0; }
+  .foot { font-size: 13px; color: var(--sub); margin: 0 14px; }
+  .rbar { position: relative; height: 28px; }
+  .rbar > div { position: absolute; top: 10px; bottom: 10px; border-radius: 4px; }
+  .rbar .all { left: 0; right: 0; background: var(--track); }
+  .rbar .keep { background: var(--amber); min-width: 2px; }
+  .rbar .head { top: 0; bottom: 0; width: 2px; border-radius: 0; background: var(--needle); }
+  .lc { display: flex; justify-content: space-between; }
+  .lc span + span { color: var(--sub); font-variant-numeric: tabular-nums; }
+  .pt { display: flex; flex-direction: column; gap: 8px; }
+  .pt .time { font-size: 26px; font-variant-numeric: tabular-nums; }
+  .pt input[type=range] { width: 100%; margin: 0; accent-color: var(--accent); }
+  .steps { display: flex; gap: 8px; }
+  .group button {
+    width: auto; padding: 0; border-radius: 0; background: none; color: var(--accent);
+    font-size: 16px; font-weight: 400; justify-content: flex-start; text-align: left;
+  }
+  .group .steps button {
+    flex: 1; justify-content: center; padding: 8px 0; border-radius: 8px;
+    background: var(--btn); color: var(--accent); font-variant-numeric: tabular-nums;
+    -webkit-touch-callout: none; touch-action: manipulation;
+  }
+  .group button.danger { color: var(--err); }
+  .group button .ic { width: 1.4em; display: inline-block; text-align: center; }
+  #reconvert { background: var(--accent); color: var(--accent-text); padding: 16px; font-size: 17px; }
 </style>
 </head>
 <body>
 <main>
-  <h1>WebRecord<span class="ver">2026/11/02</span></h1>
+  <h1>WebRecord<span class="ver">2026/11/15</span></h1>
 
   <button id="pick"><span class="dot"></span>画面収録した動画を選ぶ</button>
   <input id="file" type="file" accept="video/*,audio/*" hidden>
 
   <progress id="bar" max="1" value="0" hidden></progress>
   <div id="status"></div>
+
+  <fieldset id="trim" hidden>
+    <p class="trim-title">頭と末尾をカット</p>
+    <div class="group">
+      <div class="rbar" id="rbar" role="img">
+        <div class="all"></div><div class="keep" id="keep"></div><div class="head" id="phead" hidden></div>
+      </div>
+      <div class="lc"><span>元の長さ</span><span id="fullLen"></span></div>
+      <div class="lc"><span>カット後の長さ</span><span id="keepLen"></span></div>
+    </div>
+
+    <div id="trimBody">
+      <div class="gh">頭（ここより前をカット）</div>
+      <div class="group" data-point="start">
+        <div class="pt">
+          <div class="time"></div>
+          <input type="range" step="0.01">
+          <div class="steps"><button data-d="-1">−1</button><button data-d="-0.1">−0.1</button><button data-d="0.1">+0.1</button><button data-d="1">+1</button></div>
+        </div>
+        <button class="listen"><span class="ic">▶</span>頭から 3 秒を試聴</button>
+        <button class="fromPreview" hidden></button>
+      </div>
+
+      <div class="gh">末尾（ここより後をカット）</div>
+      <div class="group" data-point="end">
+        <div class="pt">
+          <div class="time"></div>
+          <input type="range" step="0.01">
+          <div class="steps"><button data-d="-1">−1</button><button data-d="-0.1">−0.1</button><button data-d="0.1">+0.1</button><button data-d="1">+1</button></div>
+        </div>
+        <button class="listen"><span class="ic">▶</span>末尾の 3 秒前から試聴</button>
+        <button class="fromPreview" hidden></button>
+      </div>
+
+      <div id="resetBox">
+        <div class="group"><button id="reset" class="danger"><span class="ic">↺</span>カットを取り消す（元の長さに戻す）</button></div>
+        <p class="foot">前後の無音の自動カットも取り消し、収録した音声全体に戻します。</p>
+      </div>
+    </div>
+    <div class="group" id="tooShort" hidden><div>音声が短すぎるため、カットできません。</div></div>
+
+    <button id="reconvert" hidden>この範囲でMP3に変換</button>
+  </fieldset>
+
   <audio id="preview" controls hidden></audio>
 
   <button id="save" disabled>MP3を保存</button>
@@ -72,6 +151,7 @@
       <li>アクションボタン（またはロック画面のボタン）で画面収録を開始</li>
       <li>Safariで音を再生し、終わったら画面上部の赤い表示 →「停止」</li>
       <li>「画面収録した動画を選ぶ」で動画を選択（前後の無音は自動でカット）</li>
+      <li>必要なら「頭と末尾をカット」で範囲を調整し、「この範囲でMP3に変換」</li>
       <li>「MP3を保存」→「"ファイル"に保存」</li>
     </ol>
   </details>
